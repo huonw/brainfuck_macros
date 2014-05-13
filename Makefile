@@ -11,7 +11,7 @@ YO_DAWG = $(shell $(RUSTC) --crate-file-name bf_bf_interpreter.rs)
 all: lib test
 
 $(OUT):
-	mkdir $(OUT)
+	mkdir -p $(OUT)
 
 lib:  $(OUT) $(OUT)/$(DYLIB)
 
