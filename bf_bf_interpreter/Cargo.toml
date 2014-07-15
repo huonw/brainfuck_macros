@@ -1,0 +1,7 @@
+[package]
+name = "bf_bf_interpreter"
+version = "0.1.0"
+authors = ["Huon Wilson <dbau.pp@gmail.com>"]
+
+[dependencies.brainfuck_macros]
+path = ".."

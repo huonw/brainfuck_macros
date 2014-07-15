@@ -7,7 +7,7 @@ Example:
 ```rust
 #![feature(phase)]
 
-#[phase(syntax)] extern crate brainfuck;
+#[phase(plugin)] extern crate brainfuck_macros;
 
 use std::io;
 
@@ -17,17 +17,24 @@ fn main() {
         ---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
     };
 
-    hello_world(&mut io::stdin(), &mut io::stdout());
+    hello_world(&mut io::stdin(), &mut io::stdout()).unwrap();
 }
 ```
 
 
-See `test.rs` for some basic examples and `bf_bf_interpreter.rs` for
+See `tests/` and `examples/` for some basic examples and the
+`bf_bf_interpreter` subpackage for
 [brainfuck interpreter written in brainfuck](http://homepages.xnet.co.nz/~clive/eigenratios/cgbfi2.b).
 
-Compiles with Rust master at `e454851` (run `make` to build everything
-into the `build` subdirectory).
+This is [Cargo enabled](http://crates.io/), and so can be used
+by adding a `[dependencies.brainfuck_macros]` section pointing to this
+git repository to your Cargo.toml. If you wish to also use
+`bf_bf_interpreter`, simply add `[dependencies.bf_bf_interpreter]`
+section also pointing to this repository.
 
+Compiles with Rust nightly at
+`3d70f50b2ce2e04bb8db934721eeaddb80a7cc27 2014-07-14 00:31:30
++0000`.
 
 ## Specs
 

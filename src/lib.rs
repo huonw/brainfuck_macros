@@ -1,25 +1,27 @@
 //! A macro that parses brainfuck code at compile time.
 
-#![crate_id="brainfuck"]
+#![crate_name="brainfuck_macros"]
 #![crate_type="dylib"]
 
-#![feature(quote, managed_boxes, macro_registrar, macro_rules)]
+#![feature(quote, plugin_registrar, macro_rules)]
 
 extern crate syntax;
+extern crate rustc;
+
+use std::gc::Gc;
+
 use syntax::ast;
 use syntax::codemap;
-use syntax::ext::base::{
-    SyntaxExtension, ExtCtxt, MacResult, MacExpr,
-    NormalTT, BasicMacroExpander,
-};
+use syntax::ext::base::{ExtCtxt, MacResult, MacExpr};
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token;
 
-#[macro_registrar]
+use rustc::plugin::Registry;
+
+#[plugin_registrar]
 #[doc(hidden)]
-pub fn macro_registrar(register: |ast::Name, SyntaxExtension|) {
-    let expander = box BasicMacroExpander { expander: brainfuck, span: None };
-    register(token::intern("brainfuck"), NormalTT(expander, None))
+pub fn plugin_registrar(registrar: &mut Registry) {
+    registrar.register_macro("brainfuck", brainfuck)
 }
 
 
@@ -49,14 +51,14 @@ fn brainfuck(cx: &mut ExtCtxt, sp: codemap::Span, tts: &[ast::TokenTree]) -> Box
 
 struct BF<'a> {
     cx: &'a ExtCtxt<'a>,
-    array: @ast::Expr,
-    idx: @ast::Expr,
-    rdr: @ast::Expr,
-    wtr: @ast::Expr
+    array: Gc<ast::Expr>,
+    idx: Gc<ast::Expr>,
+    rdr: Gc<ast::Expr>,
+    wtr: Gc<ast::Expr>
 }
 
 impl<'a> BF<'a> {
-    fn tts_to_expr(&self, sp: codemap::Span, tts: &[ast::TokenTree]) -> @ast::Expr {
+    fn tts_to_expr(&self, sp: codemap::Span, tts: &[ast::TokenTree]) -> Gc<ast::Expr> {
         let v = tts.iter()
             .filter_map(|tt| self.tt_to_expr(sp,tt).map(|e| self.cx.stmt_expr(e)))
             .collect();
@@ -65,7 +67,7 @@ impl<'a> BF<'a> {
         self.cx.expr_block(block)
     }
 
-    fn tt_to_expr(&self, sp: codemap::Span, tt: &ast::TokenTree) -> Option<@ast::Expr> {
+    fn tt_to_expr(&self, sp: codemap::Span, tt: &ast::TokenTree) -> Option<Gc<ast::Expr>> {
         match *tt {
             ast::TTTok(sp, ref tok) => self.token_to_expr(sp, tok),
 
@@ -107,7 +109,7 @@ impl<'a> BF<'a> {
     }
 
     fn token_to_expr(&self, sp: codemap::Span,
-                     tok: &token::Token) -> Option<@ast::Expr> {
+                     tok: &token::Token) -> Option<Gc<ast::Expr>> {
         // some tokens consist of multiple characters that brainfuck
         // needs to know about, so we do the obvious thing of just
         // taking each one and combining into a single expression.
@@ -179,8 +181,6 @@ impl<'a> BF<'a> {
             }
             // ->
             token::RARROW => recompose!(token::BINOP(token::MINUS), token::GT),
-            // <->
-            token::DARROW => recompose!(token::LT, token::BINOP(token::MINUS), token::GT),
             // <-
             token::LARROW => recompose!(token::LT, token::BINOP(token::MINUS)),
             _ => {

@@ -2,15 +2,14 @@
 
 #![feature(phase)]
 
-#[phase(syntax)] extern crate brainfuck;
+#[phase(plugin)] extern crate brainfuck_macros;
 
 #[cfg(bf_bf_interpreter)]
 extern crate bf_bf_interpreter;
 
 
-extern crate rand;
-
-use std::io;
+use std::{io, rand};
+use std::rand::Rng;
 use std::io::{BufReader, MemWriter};
 
 /// Takes a compiled brainfuck program, feeds it `input` one byte at a
@@ -47,25 +46,12 @@ fn hello_world_harder() {
 
 #[test]
 fn cat() {
-    use rand::{task_rng, Rng};
-
     let bf = brainfuck!(,+[-.,+]);
-    let mut rng = task_rng();
+    let mut rng = rand::task_rng();
 
-    for _ in range(0, 100) {
+    for _ in range(0u, 100) {
         let len = rng.gen::<uint>() % 200;
-        let s = rng.gen_ascii_str(len);
-        run(bf, s, s)
+        let s = rng.gen_ascii_chars().take(len).collect::<String>();
+        run(bf, s.as_slice(), s.as_slice())
     }
-}
-
-
-
-#[test]
-#[cfg(bf_bf_interpreter)]
-fn bf_interpreter() {
-    run(bf_bf_interpreter::bf(),
-        "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>
-         ---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.!",
-        "Hello World!\n");
 }

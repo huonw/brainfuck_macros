@@ -1,10 +1,10 @@
 //! A brainfuck interpreter compiled to Rust code.
 
-#![crate_id="bf_bf_interpreter"]
+#![crate_name="bf_bf_interpreter"]
 #![crate_type="lib"]
 #![feature(phase)]
 
-#[phase(syntax)] extern crate brainfuck;
+#[phase(plugin)] extern crate brainfuck_macros;
 
 
 
@@ -415,4 +415,17 @@ pub fn bf() -> fn(&mut Reader, &mut Writer) -> std::io::IoResult<Vec<u8>> {
   >                         move forward to next instruction
 ]
     }
+}
+
+
+#[test]
+fn bf_interpreter() {
+    use std::{io, str};
+    let mut input = io::BufReader::new(b"++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>
+         ---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.!");
+    let mut out = io::MemWriter::new();
+    assert!(bf()(&mut input, &mut out).is_ok());
+
+    assert_eq!(str::from_utf8(out.unwrap().as_slice()).expect("non-UTF8 bf output"),
+               "Hello World!\n");
 }
