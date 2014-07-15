@@ -1,0 +1,4 @@
+install:
+  - curl http://www.rust-lang.org/rustup.sh | sudo sh -
+script:
+  - cargo build --verbose && cargo test --verbose && cd bf_bf_interpreter && cargo build --verbose && cargo test --verbose

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/huonw/brainfuck_macros.png)](https://travis-ci.org/huonw/brainfuck_macros)
+
 A simple procedural macro that turns a
 [Brainfuck](http://en.wikipedia.org/wiki/Brainfuck) program into
 native code.
