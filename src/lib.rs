@@ -28,7 +28,7 @@ pub fn plugin_registrar(registrar: &mut Registry) {
 // This essentially translates token-wise, using the symbol mappings
 // given in the table at:
 // http://en.wikipedia.org/wiki/Brainfuck#Commands
-fn brainfuck(cx: &mut ExtCtxt, sp: codemap::Span, tts: &[ast::TokenTree]) -> Box<MacResult> {
+fn brainfuck(cx: &mut ExtCtxt, sp: codemap::Span, tts: &[ast::TokenTree]) -> Box<MacResult+'static> {
     let bf = BF {
         array: quote_expr!(&mut *cx, _array),
         idx: quote_expr!(&mut *cx, _i),
@@ -73,7 +73,7 @@ impl<'a> BF<'a> {
 
             // [...] or (...) or {...}
             ast::TTDelim(ref toks) => {
-                match *toks.get(0) {
+                match (**toks)[0] {
                     // [...]
                     ast::TTTok(_, token::LBRACKET) => {
                         // drop the first and last (i.e. the [ & ]).
