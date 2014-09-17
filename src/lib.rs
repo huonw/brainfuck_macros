@@ -8,9 +8,8 @@
 extern crate syntax;
 extern crate rustc;
 
-use std::gc::Gc;
-
 use syntax::ast;
+use syntax::ptr::P;
 use syntax::codemap;
 use syntax::ext::base::{ExtCtxt, MacResult, MacExpr};
 use syntax::ext::build::AstBuilder;
@@ -51,14 +50,14 @@ fn brainfuck(cx: &mut ExtCtxt, sp: codemap::Span, tts: &[ast::TokenTree]) -> Box
 
 struct BF<'a> {
     cx: &'a ExtCtxt<'a>,
-    array: Gc<ast::Expr>,
-    idx: Gc<ast::Expr>,
-    rdr: Gc<ast::Expr>,
-    wtr: Gc<ast::Expr>
+    array: P<ast::Expr>,
+    idx: P<ast::Expr>,
+    rdr: P<ast::Expr>,
+    wtr: P<ast::Expr>
 }
 
 impl<'a> BF<'a> {
-    fn tts_to_expr(&self, sp: codemap::Span, tts: &[ast::TokenTree]) -> Gc<ast::Expr> {
+    fn tts_to_expr(&self, sp: codemap::Span, tts: &[ast::TokenTree]) -> P<ast::Expr> {
         let v = tts.iter()
             .filter_map(|tt| self.tt_to_expr(sp,tt).map(|e| self.cx.stmt_expr(e)))
             .collect();
@@ -67,7 +66,7 @@ impl<'a> BF<'a> {
         self.cx.expr_block(block)
     }
 
-    fn tt_to_expr(&self, sp: codemap::Span, tt: &ast::TokenTree) -> Option<Gc<ast::Expr>> {
+    fn tt_to_expr(&self, sp: codemap::Span, tt: &ast::TokenTree) -> Option<P<ast::Expr>> {
         match *tt {
             ast::TTTok(sp, ref tok) => self.token_to_expr(sp, tok),
 
@@ -79,8 +78,8 @@ impl<'a> BF<'a> {
                         // drop the first and last (i.e. the [ & ]).
                         let centre = self.tts_to_expr(sp, toks.slice(1, toks.len() - 1));
 
-                        let array = self.array;
-                        let idx = self.idx;
+                        let array = &self.array;
+                        let idx = &self.idx;
 
                         Some(quote_expr!(self.cx, {
                             while *$array.get($idx) != 0 {
@@ -109,7 +108,7 @@ impl<'a> BF<'a> {
     }
 
     fn token_to_expr(&self, sp: codemap::Span,
-                     tok: &token::Token) -> Option<Gc<ast::Expr>> {
+                     tok: &token::Token) -> Option<P<ast::Expr>> {
         // some tokens consist of multiple characters that brainfuck
         // needs to know about, so we do the obvious thing of just
         // taking each one and combining into a single expression.
@@ -127,8 +126,8 @@ impl<'a> BF<'a> {
                 }
             }
         }
-        let idx = self.idx;
-        let array = self.array;
+        let idx = &self.idx;
+        let array = &self.array;
         match *tok {
             token::LT | token::GT => {
                 let left = *tok == token::LT;
@@ -150,7 +149,7 @@ impl<'a> BF<'a> {
             token::BINOP(token::SHR) => recompose!(token::GT, token::GT),
 
             token::DOT => {
-                let wtr = self.wtr;
+                let wtr = &self.wtr;
                 Some(quote_expr!(self.cx, try!($wtr.write([*$array.get($idx)]))))
             }
             // ..
@@ -160,7 +159,7 @@ impl<'a> BF<'a> {
 
 
             token::COMMA => {
-                let rdr = self.rdr;
+                let rdr = &self.rdr;
                 Some(quote_expr!(self.cx, {
                     use std::io;
                     *$array.get_mut($idx) = match $rdr.read_byte() {
