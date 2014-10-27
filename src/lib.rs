@@ -82,7 +82,7 @@ impl<'a> BF<'a> {
                         let idx = &self.idx;
 
                         Some(quote_expr!(self.cx, {
-                            while *$array.get($idx) != 0 {
+                            while $array[$idx] != 0 {
                                 $centre
                             }
                         }))
@@ -150,7 +150,7 @@ impl<'a> BF<'a> {
 
             token::DOT => {
                 let wtr = &self.wtr;
-                Some(quote_expr!(self.cx, try!($wtr.write([*$array.get($idx)]))))
+                Some(quote_expr!(self.cx, try!($wtr.write([$array[$idx]]))))
             }
             // ..
             token::DOTDOT => recompose!(token::DOT, token::DOT),
@@ -162,7 +162,7 @@ impl<'a> BF<'a> {
                 let rdr = &self.rdr;
                 Some(quote_expr!(self.cx, {
                     use std::io;
-                    *$array.get_mut($idx) = match $rdr.read_byte() {
+                    $array[$idx] = match $rdr.read_byte() {
                         Ok(b) => b,
                         Err(io::IoError { kind: io::EndOfFile, .. }) => -1,
                         Err(e) => return Err(e)
@@ -175,7 +175,7 @@ impl<'a> BF<'a> {
                 let dir: u8 = if a == token::PLUS { 1 } else { -1 };
 
                 Some(quote_expr!(self.cx, {
-                    *$array.get_mut($idx) += $dir
+                    $array[$idx] += $dir
                 }))
             }
             // ->
