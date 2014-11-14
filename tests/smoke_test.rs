@@ -35,6 +35,39 @@ fn hello_world() {
 }
 
 #[test]
+fn hello_world_foreign_tokens() {
+    run(brainfuck!{
+        +=
+        +
+        foo bar baz
+        ++++++[
+        =>
+        ++++[>++>+++>+++>+
+        <<=
+        <
+        $100
+        <-
+        ]>+>+>-
+        >>=
+        +[<]
+        <-
+        ]
+        >>
+        .>
+        ---.+++++++
+        ..
+        +++.
+        >>
+        .
+        <-.<.+++.
+        -=
+        -----.--------.
+        >>
+        +.>++.
+    }, "", "Hello World!\n");
+}
+
+#[test]
 fn hello_world_harder() {
     // "This is a slightly more complex variant that often triggers interpreter bugs "
     // http://esolangs.org/wiki/brainfuck

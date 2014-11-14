@@ -66,42 +66,33 @@ impl<'a> BF<'a> {
         self.cx.expr_block(block)
     }
 
-    fn tt_to_expr(&self, sp: codemap::Span, tt: &ast::TokenTree) -> Option<P<ast::Expr>> {
+    fn tt_to_expr(&self, _sp: codemap::Span, tt: &ast::TokenTree) -> Option<P<ast::Expr>> {
         match *tt {
-            ast::TTTok(sp, ref tok) => self.token_to_expr(sp, tok),
+            ast::TtToken(sp, ref tok) => self.token_to_expr(sp, tok),
 
             // [...] or (...) or {...}
-            ast::TTDelim(ref toks) => {
-                match (**toks)[0] {
+            ast::TtDelimited(sp, ref toks) => {
+                if toks.delim == token::Bracket {
                     // [...]
-                    ast::TTTok(_, token::LBRACKET) => {
-                        // drop the first and last (i.e. the [ & ]).
-                        let centre = self.tts_to_expr(sp, toks.slice(1, toks.len() - 1));
+                    let centre = self.tts_to_expr(sp, &*toks.tts);
 
-                        let array = &self.array;
-                        let idx = &self.idx;
+                    let array = &self.array;
+                    let idx = &self.idx;
 
-                        Some(quote_expr!(self.cx, {
-                            while $array[$idx] != 0 {
-                                $centre
-                            }
-                        }))
-
-                    }
-                    _ => {
-                        // not [...], so just translate directly (any
-                        // invalid tokens (like the delimiters) will
-                        // be automatically ignored)
-                        Some(self.tts_to_expr(sp,toks.as_slice()))
-                    }
+                    Some(quote_expr!(self.cx, {
+                        while $array[$idx] != 0 {
+                            $centre
+                        }
+                    }))
+                } else {
+                    // not [...], so just translate directly (the
+                    // delimiters are definitely invalid, so just
+                    // ignoring them is fine)
+                    Some(self.tts_to_expr(sp,toks.tts.as_slice()))
                 }
             }
-            ast::TTSeq(sp, _, _, _) => {
+            ast::TtSequence(sp, _) => {
                 self.cx.span_err(sp, "sequences unsupported in `brainfuck!`");
-                None
-            }
-            ast::TTNonterminal(sp, _) => {
-                self.cx.span_err(sp, "nonterminals unsupported in `brainfuck!`");
                 None
             }
         }
@@ -129,8 +120,8 @@ impl<'a> BF<'a> {
         let idx = &self.idx;
         let array = &self.array;
         match *tok {
-            token::LT | token::GT => {
-                let left = *tok == token::LT;
+            token::Lt | token::Gt => {
+                let left = *tok == token::Lt;
                 Some(quote_expr!(self.cx, {
                     if $left {
                         if $idx > 0 {
@@ -143,22 +134,29 @@ impl<'a> BF<'a> {
                     }
                 }))
             }
-            // <<
-            token::BINOP(token::SHL) => recompose!(token::LT, token::LT),
-            // >>
-            token::BINOP(token::SHR) => recompose!(token::GT, token::GT),
 
-            token::DOT => {
+            // = does nothing, so just ignore it in += >>= etc.
+            token::BinOpEq(a) => recompose!(token::BinOp(a)),
+            // <<
+            token::BinOp(token::Shl) => {
+                recompose!(token::Lt, token::Lt)
+            }
+            // >>
+            token::BinOp(token::Shr) => {
+                recompose!(token::Gt, token::Gt)
+            }
+
+            token::Dot => {
                 let wtr = &self.wtr;
                 Some(quote_expr!(self.cx, try!($wtr.write([$array[$idx]]))))
             }
             // ..
-            token::DOTDOT => recompose!(token::DOT, token::DOT),
+            token::DotDot => recompose!(token::Dot, token::Dot),
             // ...
-            token::DOTDOTDOT => recompose!(token::DOT, token::DOT, token::DOT),
+            token::DotDotDot => recompose!(token::Dot, token::Dot, token::Dot),
 
 
-            token::COMMA => {
+            token::Comma => {
                 let rdr = &self.rdr;
                 Some(quote_expr!(self.cx, {
                     use std::io;
@@ -171,17 +169,20 @@ impl<'a> BF<'a> {
             }
 
 
-            token::BINOP(a @ token::PLUS) | token::BINOP(a @ token::MINUS) => {
-                let dir: u8 = if a == token::PLUS { 1 } else { -1 };
+            token::BinOp(a @ token::Plus) | token::BinOp(a @ token::Minus) => {
+                let dir: u8 = if a == token::Plus { 1 } else { -1 };
 
                 Some(quote_expr!(self.cx, {
                     $array[$idx] += $dir
                 }))
             }
+            // =>
+            token::FatArrow => recompose!(token::Gt),
             // ->
-            token::RARROW => recompose!(token::BINOP(token::MINUS), token::GT),
+            token::RArrow => recompose!(token::BinOp(token::Minus), token::Gt),
             // <-
-            token::LARROW => recompose!(token::LT, token::BINOP(token::MINUS)),
+            token::LArrow => recompose!(token::Lt, token::BinOp(token::Minus)),
+
             _ => {
                 None
             }
