@@ -3,6 +3,17 @@ name = "brainfuck_macros"
 version = "0.1.0"
 authors = ["Huon Wilson <dbau.pp@gmail.com>"]
 
+homepage = "https://github.com/huonw/brainfuck_macros"
+repository = "https://github.com/huonw/brainfuck_macros"
+license = "MIT/Apache-2.0"
+keywords = ["plugin"]
+readme = "README.md"
+description = """
+A compiler plugin that converts brainfuck code into Rust at compile
+time, letting your BF programs be optimised by LLVM to super-fast
+native code.
+"""
+
 [lib]
 name = "brainfuck_macros"
 plugin = true
