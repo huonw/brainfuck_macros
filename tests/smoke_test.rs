@@ -22,7 +22,7 @@ fn run(bf: fn(&mut Reader, &mut Writer) -> io::IoResult<Vec<u8>>,
 
     assert!(bf(&mut input, &mut out).is_ok());
 
-    assert_eq!(std::str::from_utf8(out.unwrap().as_slice()).expect("non-UTF8 bf output"),
+    assert_eq!(std::str::from_utf8(out.into_inner().as_slice()).expect("non-UTF8 bf output"),
                expected_output)
 }
 

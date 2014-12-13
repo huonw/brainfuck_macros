@@ -148,7 +148,7 @@ impl<'a> BF<'a> {
 
             token::Dot => {
                 let wtr = &self.wtr;
-                Some(quote_expr!(self.cx, try!($wtr.write([$array[$idx]]))))
+                Some(quote_expr!(self.cx, try!($wtr.write(&[$array[$idx]]))))
             }
             // ..
             token::DotDot => recompose!(token::Dot, token::Dot),
