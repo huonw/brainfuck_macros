@@ -1,12 +1,12 @@
 [package]
 name = "brainfuck_macros"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Huon Wilson <dbau.pp@gmail.com>"]
 
 homepage = "https://github.com/huonw/brainfuck_macros"
 repository = "https://github.com/huonw/brainfuck_macros"
 license = "MIT/Apache-2.0"
-keywords = ["plugin"]
+keywords = ["plugin", "esolang"]
 readme = "README.md"
 description = """
 A compiler plugin that converts brainfuck code into Rust at compile
