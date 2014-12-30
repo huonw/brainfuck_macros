@@ -426,6 +426,6 @@ fn bf_interpreter() {
     let mut out = io::MemWriter::new();
     assert!(bf()(&mut input, &mut out).is_ok());
 
-    assert_eq!(str::from_utf8(out.unwrap().as_slice()).expect("non-UTF8 bf output"),
+    assert_eq!(str::from_utf8(&*out.into_inner()).ok().expect("non-UTF8 bf output"),
                "Hello World!\n");
 }
