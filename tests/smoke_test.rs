@@ -80,7 +80,7 @@ fn hello_world_harder() {
 #[test]
 fn cat() {
     let bf = brainfuck!(,+[-.,+]);
-    let mut rng = rand::task_rng();
+    let mut rng = rand::thread_rng();
 
     for _ in range(0u, 100) {
         let len = rng.gen::<uint>() % 200;
