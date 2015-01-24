@@ -1,6 +1,6 @@
-#![feature(phase)]
+#![feature(plugin)]
 
-#[phase(plugin)] extern crate brainfuck_macros;
+#[plugin] #[no_link] extern crate brainfuck_macros;
 
 use std::io;
 

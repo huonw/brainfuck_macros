@@ -1,8 +1,8 @@
 //! Test/examples for the brainfuck macro.
 
-#![feature(phase)]
+#![feature(plugin)]
 
-#[phase(plugin)] extern crate brainfuck_macros;
+#[plugin] extern crate brainfuck_macros;
 
 #[cfg(bf_bf_interpreter)]
 extern crate bf_bf_interpreter;
@@ -22,7 +22,7 @@ fn run(bf: fn(&mut Reader, &mut Writer) -> io::IoResult<Vec<u8>>,
 
     assert!(bf(&mut input, &mut out).is_ok());
 
-    assert_eq!(std::str::from_utf8(out.into_inner().as_slice()).ok().expect("non-UTF8 bf output"),
+    assert_eq!(std::str::from_utf8(&*out.into_inner()).ok().expect("non-UTF8 bf output"),
                expected_output)
 }
 
@@ -82,9 +82,9 @@ fn cat() {
     let bf = brainfuck!(,+[-.,+]);
     let mut rng = rand::thread_rng();
 
-    for _ in range(0u, 100) {
-        let len = rng.gen::<uint>() % 200;
+    for _ in 0..100 {
+        let len = rng.gen::<usize>() % 200;
         let s = rng.gen_ascii_chars().take(len).collect::<String>();
-        run(bf, s.as_slice(), s.as_slice())
+        run(bf, &*s, &*s)
     }
 }

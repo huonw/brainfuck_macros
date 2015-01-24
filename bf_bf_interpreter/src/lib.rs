@@ -2,9 +2,9 @@
 
 #![crate_name="bf_bf_interpreter"]
 #![crate_type="lib"]
-#![feature(phase)]
+#![feature(plugin)]
 
-#[phase(plugin)] extern crate brainfuck_macros;
+#[plugin] extern crate brainfuck_macros;
 
 
 

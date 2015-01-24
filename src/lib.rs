@@ -3,7 +3,9 @@
 #![crate_name="brainfuck_macros"]
 #![crate_type="dylib"]
 
-#![feature(quote, plugin_registrar, macro_rules)]
+#![feature(quote, plugin_registrar)]
+
+#![allow(unstable)]
 
 extern crate syntax;
 extern crate rustc;
@@ -39,7 +41,7 @@ fn brainfuck(cx: &mut ExtCtxt, sp: codemap::Span, tts: &[ast::TokenTree]) -> Box
 
     MacExpr::new(quote_expr!(bf.cx, {
         fn run(_r: &mut Reader, _w: &mut Writer) -> ::std::io::IoResult<Vec<u8>> {
-            let mut _array = Vec::from_elem(30_000, 0u8);
+            let mut _array = vec![0u8; 30_000];
             let mut _i = 0;
             $core_code;
             Ok(_array)
