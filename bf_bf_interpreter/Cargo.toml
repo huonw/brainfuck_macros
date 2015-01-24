@@ -1,6 +1,6 @@
 [package]
 name = "bf_bf_interpreter"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Huon Wilson <dbau.pp@gmail.com>"]
 
 [dependencies.brainfuck_macros]

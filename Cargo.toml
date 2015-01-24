@@ -1,6 +1,6 @@
 [package]
 name = "brainfuck_macros"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Huon Wilson <dbau.pp@gmail.com>"]
 
 homepage = "https://github.com/huonw/brainfuck_macros"
