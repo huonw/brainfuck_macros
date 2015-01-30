@@ -3,9 +3,7 @@
 #![crate_name="brainfuck_macros"]
 #![crate_type="dylib"]
 
-#![feature(quote, plugin_registrar)]
-
-#![allow(unstable)]
+#![feature(quote, plugin_registrar, rustc_private, core)]
 
 extern crate syntax;
 extern crate rustc;
@@ -40,7 +38,7 @@ fn brainfuck(cx: &mut ExtCtxt, sp: codemap::Span, tts: &[ast::TokenTree]) -> Box
     let core_code = bf.tts_to_expr(sp, tts);
 
     MacExpr::new(quote_expr!(bf.cx, {
-        fn run(_r: &mut Reader, _w: &mut Writer) -> ::std::io::IoResult<Vec<u8>> {
+        fn run(_r: &mut Reader, _w: &mut Writer) -> ::std::old_io::IoResult<Vec<u8>> {
             let mut _array = vec![0u8; 30_000];
             let mut _i = 0;
             $core_code;
@@ -161,7 +159,7 @@ impl<'a> BF<'a> {
             token::Comma => {
                 let rdr = &self.rdr;
                 Some(quote_expr!(self.cx, {
-                    use std::io;
+                    use std::old_io as io;
                     $array[$idx] = match $rdr.read_byte() {
                         Ok(b) => b,
                         Err(io::IoError { kind: io::EndOfFile, .. }) => -1,

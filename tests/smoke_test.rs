@@ -1,6 +1,6 @@
 //! Test/examples for the brainfuck macro.
 
-#![feature(plugin)]
+#![feature(plugin, io, rand)]
 
 #[plugin] extern crate brainfuck_macros;
 
@@ -8,9 +8,10 @@
 extern crate bf_bf_interpreter;
 
 
-use std::{io, rand};
+use std::rand;
 use std::rand::Rng;
-use std::io::{BufReader, MemWriter};
+use std::old_io as io;
+use std::old_io::{BufReader, MemWriter};
 
 /// Takes a compiled brainfuck program, feeds it `input` one byte at a
 /// time, and compares the output against `expected_output`.
