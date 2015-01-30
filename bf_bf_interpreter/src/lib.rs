@@ -11,7 +11,7 @@
 /// Return a function that was created by the `brainfuck!` macro
 /// running on a brainfuck interpreter written in brainfuck. (Yo
 /// dawg...).
-pub fn bf() -> fn(&mut Reader, &mut Writer) -> std::io::IoResult<Vec<u8>> {
+pub fn bf() -> fn(&mut Reader, &mut Writer) -> std::old_io::IoResult<Vec<u8>> {
     brainfuck! {
         http://homepages.xnet.co.nz/~clive/eigenratios/cgbfi2.b
 
