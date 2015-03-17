@@ -1,4 +1,2 @@
-install:
-  - curl https://static.rust-lang.org/rustup.sh | sudo sh -
-script:
-  - cargo build --verbose && cargo test --verbose && cd bf_bf_interpreter && cargo build --verbose && cargo test --verbose
+notifications:
+    webhooks: http://huon.me:54856/travis
