@@ -1,7 +1,7 @@
 [package]
 name = "brainfuck_macros"
 version = "0.1.5"
-authors = ["Huon Wilson <dbau.pp@gmail.com>"]
+authors = ["Huon Wilson <dbau.pp@gmail.com>", "Max Galkin <yacoder@yacoder.net>"]
 
 homepage = "https://github.com/huonw/brainfuck_macros"
 repository = "https://github.com/huonw/brainfuck_macros"
