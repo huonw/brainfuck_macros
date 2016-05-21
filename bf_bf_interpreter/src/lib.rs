@@ -4,14 +4,14 @@
 #![crate_type="lib"]
 #![feature(plugin)]
 
-#[plugin] extern crate brainfuck_macros;
+#![plugin(brainfuck_macros)]
 
-
+//#[plugin] extern crate brainfuck_macros;
 
 /// Return a function that was created by the `brainfuck!` macro
 /// running on a brainfuck interpreter written in brainfuck. (Yo
 /// dawg...).
-pub fn bf() -> fn(&mut Reader, &mut Writer) -> std::old_io::IoResult<Vec<u8>> {
+pub fn bf() -> fn(&mut Read, &mut Write) -> std::io::Result<Vec<u8>> {
     brainfuck! {
         http://homepages.xnet.co.nz/~clive/eigenratios/cgbfi2.b
 

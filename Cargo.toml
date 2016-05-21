@@ -17,3 +17,7 @@ native code.
 [lib]
 name = "brainfuck_macros"
 plugin = true
+
+[dependencies]
+rand = "0.3"
+

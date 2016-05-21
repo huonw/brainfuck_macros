@@ -1,8 +1,7 @@
-#![feature(plugin, io)]
+#![feature(plugin)]
+#![plugin(brainfuck_macros)]
 
-#[plugin] #[no_link] extern crate brainfuck_macros;
-
-use std::old_io as io;
+use std::io;
 
 fn main() {
     let hello_world = brainfuck!{

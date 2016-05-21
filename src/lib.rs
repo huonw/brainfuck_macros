@@ -3,19 +3,21 @@
 #![crate_name="brainfuck_macros"]
 #![crate_type="dylib"]
 
-#![feature(quote, plugin_registrar, rustc_private, core)]
+#![feature(quote, plugin_registrar, rustc_private)]
 
 extern crate syntax;
 extern crate rustc;
+extern crate rustc_plugin;
 
 use syntax::ast;
+use syntax::ast::TokenTree;
 use syntax::ptr::P;
 use syntax::codemap;
-use syntax::ext::base::{ExtCtxt, MacResult, MacExpr};
+use syntax::ext::base::{ExtCtxt, MacResult, MacEager};
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token;
 
-use rustc::plugin::Registry;
+use rustc_plugin::Registry;
 
 #[plugin_registrar]
 #[doc(hidden)]
@@ -37,8 +39,8 @@ fn brainfuck(cx: &mut ExtCtxt, sp: codemap::Span, tts: &[ast::TokenTree]) -> Box
     };
     let core_code = bf.tts_to_expr(sp, tts);
 
-    MacExpr::new(quote_expr!(bf.cx, {
-        fn run(_r: &mut Reader, _w: &mut Writer) -> ::std::old_io::IoResult<Vec<u8>> {
+    MacEager::expr(quote_expr!(bf.cx, {
+        fn run(_r: &mut io::Read, _w: &mut io::Write) -> io::Result<Vec<u8>> {
             let mut _array = vec![0u8; 30_000];
             let mut _i = 0;
             $core_code;
@@ -68,10 +70,10 @@ impl<'a> BF<'a> {
 
     fn tt_to_expr(&self, _sp: codemap::Span, tt: &ast::TokenTree) -> Option<P<ast::Expr>> {
         match *tt {
-            ast::TtToken(sp, ref tok) => self.token_to_expr(sp, tok),
+            TokenTree::Token(sp, ref tok) => self.token_to_expr(sp, tok),
 
             // [...] or (...) or {...}
-            ast::TtDelimited(sp, ref toks) => {
+            TokenTree::Delimited(sp, ref toks) => {
                 if toks.delim == token::Bracket {
                     // [...]
                     let centre = self.tts_to_expr(sp, &*toks.tts);
@@ -91,7 +93,7 @@ impl<'a> BF<'a> {
                     Some(self.tts_to_expr(sp,toks.tts.as_slice()))
                 }
             }
-            ast::TtSequence(sp, _) => {
+            TokenTree::Sequence(sp, _) => {
                 self.cx.span_err(sp, "sequences unsupported in `brainfuck!`");
                 None
             }
@@ -159,23 +161,28 @@ impl<'a> BF<'a> {
             token::Comma => {
                 let rdr = &self.rdr;
                 Some(quote_expr!(self.cx, {
-                    use std::old_io as io;
-                    $array[$idx] = match $rdr.read_byte() {
-                        Ok(b) => b,
-                        Err(io::IoError { kind: io::EndOfFile, .. }) => -1,
+                    let mut buffer = [0; 1];
+                    $array[$idx] = match $rdr.read(&mut buffer[..]) {
+                        Ok(1) => buffer[0],
+                        Ok(_) => return Ok($array), //end the execution with the output we have, if we attempt to read past the input size
                         Err(e) => return Err(e)
                     }
                 }))
             }
 
 
-            token::BinOp(a @ token::Plus) | token::BinOp(a @ token::Minus) => {
-                let dir: u8 = if a == token::Plus { 1 } else { -1 };
-
+            token::BinOp(token::Plus) => {
                 Some(quote_expr!(self.cx, {
-                    $array[$idx] += $dir
+                    $array[$idx] += 1
                 }))
             }
+            token::BinOp(token::Minus) => {
+                Some(quote_expr!(self.cx, {
+                    $array[$idx] -= 1
+                }))
+            }
+
+
             // =>
             token::FatArrow => recompose!(token::Gt),
             // ->
