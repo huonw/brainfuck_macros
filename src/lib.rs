@@ -38,8 +38,9 @@ fn brainfuck(cx: &mut ExtCtxt, sp: codemap::Span, tts: &[ast::TokenTree]) -> Box
         cx: cx,
     };
     let core_code = bf.tts_to_expr(sp, tts);
-
+    
     MacEager::expr(quote_expr!(bf.cx, {
+        use std::io;
         fn run(_r: &mut io::Read, _w: &mut io::Write) -> io::Result<Vec<u8>> {
             let mut _array = vec![0u8; 30_000];
             let mut _i = 0;
