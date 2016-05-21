@@ -1,29 +1,26 @@
 //! Test/examples for the brainfuck macro.
 
-#![feature(plugin, io, rand)]
-
-#[plugin] extern crate brainfuck_macros;
+#![feature(plugin)]
+#![plugin(brainfuck_macros)]
 
 #[cfg(bf_bf_interpreter)]
 extern crate bf_bf_interpreter;
 
+extern crate rand;
 
-use std::rand;
-use std::rand::Rng;
-use std::old_io as io;
-use std::old_io::{BufReader, MemWriter};
+use std::io;
 
 /// Takes a compiled brainfuck program, feeds it `input` one byte at a
 /// time, and compares the output against `expected_output`.
-fn run(bf: fn(&mut Reader, &mut Writer) -> io::IoResult<Vec<u8>>,
+fn run(bf: fn(&mut io::Read, &mut io::Write) -> io::Result<Vec<u8>>,
        input: &str,
        expected_output: &str) {
-    let mut input = BufReader::new(input.as_bytes());
-    let mut out = MemWriter::new();
+    let mut input = input.as_bytes();
+    let mut out = Vec::new();
 
     assert!(bf(&mut input, &mut out).is_ok());
 
-    assert_eq!(std::str::from_utf8(&*out.into_inner()).ok().expect("non-UTF8 bf output"),
+    assert_eq!(std::str::from_utf8(&mut out).ok().expect("non-UTF8 bf output"),
                expected_output)
 }
 
@@ -80,6 +77,9 @@ fn hello_world_harder() {
 
 #[test]
 fn cat() {
+    // test: print input (random) string to output as is 
+    use rand::Rng;
+
     let bf = brainfuck!(,+[-.,+]);
     let mut rng = rand::thread_rng();
 

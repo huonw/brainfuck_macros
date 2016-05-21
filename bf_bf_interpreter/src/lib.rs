@@ -4,14 +4,14 @@
 #![crate_type="lib"]
 #![feature(plugin)]
 
-#[plugin] extern crate brainfuck_macros;
+#![plugin(brainfuck_macros)]
 
-
+use std::io;
 
 /// Return a function that was created by the `brainfuck!` macro
 /// running on a brainfuck interpreter written in brainfuck. (Yo
 /// dawg...).
-pub fn bf() -> fn(&mut Reader, &mut Writer) -> std::old_io::IoResult<Vec<u8>> {
+pub fn bf() -> fn(&mut io::Read, &mut io::Write) -> io::Result<Vec<u8>> {
     brainfuck! {
         http://homepages.xnet.co.nz/~clive/eigenratios/cgbfi2.b
 
@@ -420,12 +420,12 @@ pub fn bf() -> fn(&mut Reader, &mut Writer) -> std::old_io::IoResult<Vec<u8>> {
 
 #[test]
 fn bf_interpreter() {
-    use std::{io, str};
-    let mut input = io::BufReader::new(b"++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>
-         ---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.!");
-    let mut out = io::MemWriter::new();
+    use std::str;
+    let mut input = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>
+         ---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.!".as_bytes();
+    let mut out = Vec::new();
     assert!(bf()(&mut input, &mut out).is_ok());
 
-    assert_eq!(str::from_utf8(&*out.into_inner()).ok().expect("non-UTF8 bf output"),
+    assert_eq!(str::from_utf8(&mut out).ok().expect("non-UTF8 bf output"),
                "Hello World!\n");
 }
